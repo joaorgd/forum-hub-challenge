@@ -1,35 +1,32 @@
 package com.alura.forumhub.controller;
 
-
-import com.alura.forumhub.domain.topico.Topico;
 import com.alura.forumhub.domain.usuario.Usuario;
 import com.alura.forumhub.dto.DadosCadastroTopico;
+import com.alura.forumhub.dto.DadosDetalhamentoTopico;
+import com.alura.forumhub.service.TopicoService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
-// no pacote com.alura.forumhub.controller
 @RestController
 @RequestMapping("/topicos")
 public class TopicoController {
 
-    @Autowired
-    private Topico topicoService; // Injetar o serviço
+    private final TopicoService topicoService;
+
+    // Injeção de dependência via construtor
+    public TopicoController(TopicoService topicoService) {
+        this.topicoService = topicoService;
+    }
 
     @PostMapping
     @Transactional
-    public ResponseEntity cadastrar(@RequestBody @Valid DadosCadastroTopico dados, @AuthenticationPrincipal Usuario autor) {
-        // O autor é pego do usuário logado, não mais do DTO
-        var topicoDetalhado = topicoService.criar(dados, autor);
-        // Retornar 201 Created com a localização do novo recurso
-        // UriComponentsBuilder uriBuilder...
-        return ResponseEntity.ok(topicoDetalhado);
+    public ResponseEntity<DadosDetalhamentoTopico> cadastrar(@RequestBody @Valid DadosCadastroTopico dados, @AuthenticationPrincipal Usuario autor, UriComponentsBuilder uriBuilder) {
+        var topicoDto = topicoService.criar(dados, autor);
+        var uri = uriBuilder.path("/topicos/{id}").buildAndExpand(topicoDto.id()).toUri();
+        return ResponseEntity.created(uri).body(topicoDto);
     }
-
-    // Os outros métodos (listar, detalhar, atualizar, deletar) podem ser implementados
-    // de forma similar, delegando a lógica para o TopicoService.
-    // O método de atualização e deleção deve verificar se o usuário logado é o autor do tópico.
 }
