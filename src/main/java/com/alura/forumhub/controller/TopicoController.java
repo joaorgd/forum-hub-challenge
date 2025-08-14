@@ -1,3 +1,4 @@
+// Controller com todos os endpoints para o CRUD de Tópicos.
 package com.alura.forumhub.controller;
 
 import com.alura.forumhub.domain.usuario.Usuario;
@@ -27,21 +28,28 @@ public class TopicoController {
     }
 
     @PostMapping
-    @Transactional
+    @Transactional // Anotação para indicar que este método modifica o banco de dados.
     public ResponseEntity<DadosDetalhamentoTopico> cadastrar(@RequestBody @Valid DadosCadastroTopico dados, @AuthenticationPrincipal Usuario autor, UriComponentsBuilder uriBuilder) {
+        // @RequestBody: Pega os dados do corpo da requisição.
+        // @Valid: Aciona as validações definidas no DTO.
+        // @AuthenticationPrincipal: Injeta o objeto do usuário que está logado.
         var topicoDto = topicoService.criar(dados, autor);
+        // Cria a URI para o novo recurso criado, seguindo as boas práticas REST.
         var uri = uriBuilder.path("/topicos/{id}").buildAndExpand(topicoDto.id()).toUri();
+        // Retorna o status 201 Created com a URI e os dados do novo tópico.
         return ResponseEntity.created(uri).body(topicoDto);
     }
 
     @GetMapping
     public ResponseEntity<Page<DadosListagemTopico>> listar(@PageableDefault(size = 10, sort = {"dataCriacao"}) Pageable paginacao) {
+        // @PageableDefault: Define valores padrão para paginação e ordenação.
         var page = topicoService.listar(paginacao);
         return ResponseEntity.ok(page);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<DadosDetalhamentoTopico> detalhar(@PathVariable Long id) {
+        // @PathVariable: Pega o ID da URL (ex: /topicos/1).
         var topicoDto = topicoService.detalhar(id);
         return ResponseEntity.ok(topicoDto);
     }
@@ -57,6 +65,7 @@ public class TopicoController {
     @Transactional
     public ResponseEntity<Void> excluir(@PathVariable Long id, @AuthenticationPrincipal Usuario autorLogado) {
         topicoService.excluir(id, autorLogado);
+        // Retorna o status 204 No Content, indicando sucesso sem corpo de resposta.
         return ResponseEntity.noContent().build();
     }
 }

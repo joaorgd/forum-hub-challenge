@@ -1,3 +1,4 @@
+// Esta classe é a ponte entre o Spring Security e nosso sistema de usuários.
 package com.alura.forumhub.service;
 
 import com.alura.forumhub.repository.UsuarioRepository;
@@ -15,10 +16,12 @@ public class AutenticacaoService implements UserDetailsService {
         this.repository = repository;
     }
 
+    // O Spring Security chama este método quando precisa carregar os dados de um usuário
+    // para realizar a autenticação.
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // O Spring Security chama este método ao tentar autenticar um usuário.
-        // O "username" neste caso é o nosso email.
+        // No nosso sistema, o "username" é o email do usuário.
+        // Buscamos o usuário no banco de dados pelo email.
         return repository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o email: " + username));
     }
